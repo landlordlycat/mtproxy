@@ -1,4 +1,6 @@
-FROM --platform=$TARGETPLATFORM nginx AS build
+FROM --platform=$TARGETPLATFORM nginx:1.23.2 AS build
+#FROM  nginx:1.23.2 AS build
+
 
 COPY . /home/mtproxy
 
@@ -10,7 +12,6 @@ WORKDIR /home/mtproxy
 RUN set -ex \
     && cd $WORKDIR \
     && cp src/* /usr/share/nginx/html \
-    && cp mtp_config mtp_config.bak \
     && rm -rf .git \
     && cp mtproxy-entrypoint.sh /docker-entrypoint.d/40-mtproxy-start.sh \
     && chmod +x /docker-entrypoint.d/40-mtproxy-start.sh \
@@ -21,7 +22,7 @@ RUN set -ex \
 # build mtproxy and install php
 RUN set -ex \
     && apt-get update \
-    && apt-get install -y --no-install-recommends git wget curl build-essential libssl-dev zlib1g-dev iproute2 php7.4-fpm vim-common \
+    && apt-get install -y --no-install-recommends git wget curl build-essential libssl-dev zlib1g-dev iproute2 php7.4-fpm vim-common net-tools ntpdate procps \
     && bash mtproxy.sh build \
     && sed -i 's/^user\s*=[^\r]\+/user = root/' /etc/php/7.4/fpm/pool.d/www.conf \
     && sed -i 's/^group\s*=[^\r]\+/group = root/' /etc/php/7.4/fpm/pool.d/www.conf \
